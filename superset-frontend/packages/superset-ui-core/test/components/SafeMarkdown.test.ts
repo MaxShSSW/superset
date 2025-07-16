@@ -16,7 +16,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import { render } from '@testing-library/react';
+import { SafeMarkdown } from '../../src/components/SafeMarkdown/SafeMarkdown';
 import { getOverrideHtmlSchema } from '../../src/components/SafeMarkdown/SafeMarkdown';
+
+describe('SafeMarkdown', () => {
+  it('should render links with target="_blank" and rel="noopener noreferrer"', () => {
+    const markdownSource = '[🎧 Support](https://example.com)';
+    const { container } = render(<SafeMarkdown source={markdownSource} />);
+    
+    const link = container.querySelector('a');
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', 'https://example.com');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(link).toHaveTextContent('🎧 Support');
+  });
+
+  it('should render multiple links with correct attributes', () => {
+    const markdownSource = '[Link 1](https://example1.com) and [Link 2](https://example2.com)';
+    const { container } = render(<SafeMarkdown source={markdownSource} />);
+    
+    const links = container.querySelectorAll('a');
+    expect(links).toHaveLength(2);
+    
+    links.forEach(link => {
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    });
+  });
+});
 
 describe('getOverrideHtmlSchema', () => {
   it('should append the override items', () => {
