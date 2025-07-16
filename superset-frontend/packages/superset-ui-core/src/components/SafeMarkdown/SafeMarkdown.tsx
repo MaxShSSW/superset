@@ -37,6 +37,12 @@ export function getOverrideHtmlSchema(
   );
 }
 
+// Custom link transformer to make all links open in new tab
+const transformLinkUri = (uri: string) => {
+  // Return the URI as-is, but we'll handle the target attribute in the component
+  return uri;
+};
+
 export function SafeMarkdown({
   source,
   htmlSanitization = true,
@@ -79,7 +85,12 @@ export function SafeMarkdown({
       rehypePlugins={rehypePlugins}
       remarkPlugins={[remarkGfm]}
       skipHtml={false}
-      transformLinkUri={null}
+      transformLinkUri={transformLinkUri}
+      components={{
+        a: ({ node, ...props }) => (
+          <a {...props} target="_blank" rel="noopener noreferrer" />
+        ),
+      }}
     >
       {source}
     </ReactMarkdown>
