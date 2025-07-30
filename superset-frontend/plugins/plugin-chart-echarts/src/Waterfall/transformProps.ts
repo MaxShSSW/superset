@@ -36,6 +36,7 @@ import {
   ISeriesData,
   WaterfallChartTransformedProps,
   ICallbackDataParams,
+  WaterfallSortByValues,
 } from './types';
 import { getDefaultTooltip } from '../utils/tooltip';
 import { defaultGrid, defaultYAxis } from '../defaults';
@@ -86,16 +87,48 @@ function formatTooltip({
   return tooltipHtml(rows, title);
 }
 
+function sortData(
+  data: DataRecord[],
+  metric: string,
+  sortByValues: WaterfallSortByValues,
+): DataRecord[] {
+  if (sortByValues === 'none') {
+    return data;
+  }
+
+  const sortedData = [...data].sort((a, b) => {
+    const aValue = (a[metric] as number) ?? 0;
+    const bValue = (b[metric] as number) ?? 0;
+
+    switch (sortByValues) {
+      case 'ascending':
+        return aValue - bValue;
+      case 'descending':
+        return bValue - aValue;
+      case 'absolute_ascending':
+        return Math.abs(aValue) - Math.abs(bValue);
+      case 'absolute_descending':
+        return Math.abs(bValue) - Math.abs(aValue);
+      default:
+        return 0;
+    }
+  });
+
+  return sortedData;
+}
+
 function transformer({
   data,
   xAxis,
   metric,
   breakdown,
+  sortByValues = 'none',
 }: {
   data: DataRecord[];
   xAxis: string;
   metric: string;
   breakdown?: string;
+  sortByValues?: WaterfallSortByValues;
 }) {
   // Group by series (temporary map)
   const groupedData = data.reduce((acc, cur) => {
@@ -143,6 +176,43 @@ function transformer({
     });
   }
 
+  // Sort the transformed data if needed
+  if (sortByValues !== 'none') {
+    // Remove the total row for sorting, then add it back
+    const totalRow = transformedData.find(row => row[xAxis] === TOTAL_MARK);
+    const dataWithoutTotal = transformedData.filter(row => row[xAxis] !== TOTAL_MARK);
+    
+    const sortedDataWithoutTotal = sortData(dataWithoutTotal, metric, sortByValues);
+    
+    // Reconstruct the transformed data with sorted values
+    const sortedTransformedData: DataRecord[] = [];
+    
+    if (breakdown) {
+      // For breakdown case, we need to maintain the structure
+      const groupedByCategory = sortedDataWithoutTotal.reduce((acc, cur) => {
+        const categoryLabel = cur[xAxis] as string;
+        const categoryData = acc.get(categoryLabel) || [];
+        categoryData.push(cur);
+        acc.set(categoryLabel, categoryData);
+        return acc;
+      }, new Map<string, DataRecord[]>());
+
+      groupedByCategory.forEach((value, key) => {
+        sortedTransformedData.push(...value);
+      });
+    } else {
+      // For non-breakdown case, just add the sorted data
+      sortedTransformedData.push(...sortedDataWithoutTotal);
+    }
+    
+    // Add the total row back at the end
+    if (totalRow) {
+      sortedTransformedData.push(totalRow);
+    }
+    
+    return sortedTransformedData;
+  }
+
   return transformedData;
 }
 
@@ -179,6 +249,7 @@ export default function transformProps(
     xAxisLabel,
     yAxisFormat,
     showValue,
+    sortByValues = 'none',
   } = formData;
   const defaultFormatter = currencyFormat?.symbol
     ? new CurrencyFormatter({ d3Format: yAxisFormat, currency: currencyFormat })
@@ -205,6 +276,7 @@ export default function transformProps(
     breakdown: breakdownName,
     xAxis: xAxisName,
     metric: metricLabel,
+    sortByValues,
   });
 
   const assistData: ISeriesData[] = [];

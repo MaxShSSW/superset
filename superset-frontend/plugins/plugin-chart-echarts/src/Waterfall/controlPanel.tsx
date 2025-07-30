@@ -134,6 +134,26 @@ const config: ControlPanelConfig = {
             },
           },
         ],
+        [
+          {
+            name: 'sort_by_values',
+            config: {
+              type: 'SelectControl',
+              label: t('Sort by Values'),
+              choices: formatSelectOptions([
+                'none',
+                'ascending',
+                'descending',
+                'absolute_ascending',
+                'absolute_descending',
+              ]),
+              default: 'none',
+              clearable: false,
+              renderTrigger: true,
+              description: t('Sort the waterfall chart by metric values. "Absolute" options sort by absolute values regardless of sign.'),
+            },
+          },
+        ],
         [<ControlSubSectionHeader>{t('Y Axis')}</ControlSubSectionHeader>],
         [
           {

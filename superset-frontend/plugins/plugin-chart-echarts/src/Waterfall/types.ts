@@ -35,6 +35,13 @@ export type WaterfallFormXTicksLayout =
   | 'flat'
   | 'staggered';
 
+export type WaterfallSortByValues =
+  | 'none'
+  | 'ascending'
+  | 'descending'
+  | 'absolute_ascending'
+  | 'absolute_descending';
+
 export type ISeriesData = {
   originalValue?: number;
   totalSum?: number;
@@ -55,12 +62,14 @@ export type EchartsWaterfallFormData = QueryFormData &
     xAxisLabel: string;
     xAxisTimeFormat?: string;
     xTicksLayout?: WaterfallFormXTicksLayout;
+    sortByValues?: WaterfallSortByValues;
     yAxisLabel: string;
     yAxisFormat: string;
   };
 
 export const DEFAULT_FORM_DATA: Partial<EchartsWaterfallFormData> = {
   showLegend: true,
+  sortByValues: 'none',
 };
 
 export interface EchartsWaterfallChartProps extends ChartProps {
