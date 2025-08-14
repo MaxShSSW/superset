@@ -196,6 +196,7 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
         from superset.views.user_registrations import UserRegistrationsView
         from superset.views.users.api import CurrentUserRestApi, UserRestApi
         from superset.views.users_list import UsersListView
+        from superset.views.release_notes import ReleaseNotesView
 
         set_app_error_handlers(self.superset_app)
 
@@ -279,6 +280,15 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
             label=_("Datasets"),
             href=f"{app_root}/tablemodelview/list/",
             icon="fa-table",
+            category="",
+            category_icon="",
+        )
+
+        appbuilder.add_link(
+            "Release Notes",
+            label=_("Release Notes"),
+            href="/release_notes/",
+            icon="fa-file-text",
             category="",
             category_icon="",
         )
@@ -367,6 +377,7 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
         appbuilder.add_view_no_menu(ReportView)
         appbuilder.add_view_no_menu(RoleRestAPI)
         appbuilder.add_view_no_menu(UserInfoView)
+        appbuilder.add_view_no_menu(ReleaseNotesView)
 
         #
         # Add links
